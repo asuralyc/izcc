@@ -67,6 +67,21 @@ const deployFields: Array<{
   }
 ];
 
+const deployNavItems = [
+  { id: 'inputs', label: '參數' },
+  { id: 'nginx-install', label: '1. Nginx' },
+  { id: 'node-install', label: '2. NodeJS' },
+  { id: 'postgres-install', label: '3. PostgreSQL' },
+  { id: 'project', label: '4. 專案目錄' },
+  { id: 'database', label: '5. 資料庫' },
+  { id: 'env', label: '6. 環境變數' },
+  { id: 'build', label: '7. 建置' },
+  { id: 'systemd', label: '8. API 服務' },
+  { id: 'nginx', label: '9. Nginx 設定' },
+  { id: 'verify', label: '10. 驗證' },
+  { id: 'update', label: '更新' }
+];
+
 const nginxInstall = `
 sudo apt update
 sudo apt install -y nginx
@@ -236,6 +251,21 @@ function filled(template: string) {
   code = replaceToken(code, '__ADMIN_PASSWORD__', params.adminPassword || 'REPLACE_WITH_ADMIN_PASSWORD');
   return code;
 }
+
+function scrollToDeployStep(id: string) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const headerOffset = header?.offsetHeight ?? 0;
+  const top = target.getBoundingClientRect().top + window.scrollY - headerOffset - 18;
+
+  window.history.replaceState(null, '', `#${id}`);
+  window.scrollTo({
+    top: Math.max(top, 0),
+    behavior: 'smooth'
+  });
+}
 </script>
 
 <template>
@@ -249,18 +279,14 @@ function filled(template: string) {
 
     <section class="deploy-layout">
       <nav class="panel deploy-nav" aria-label="部署步驟">
-        <a href="#inputs">參數</a>
-        <a href="#nginx-install">1. Nginx</a>
-        <a href="#node-install">2. NodeJS</a>
-        <a href="#postgres-install">3. PostgreSQL</a>
-        <a href="#project">4. 專案目錄</a>
-        <a href="#database">5. 資料庫</a>
-        <a href="#env">6. 環境變數</a>
-        <a href="#build">7. 建置</a>
-        <a href="#systemd">8. API 服務</a>
-        <a href="#nginx">9. Nginx 設定</a>
-        <a href="#verify">10. 驗證</a>
-        <a href="#update">更新</a>
+        <a
+          v-for="item in deployNavItems"
+          :key="item.id"
+          :href="`#${item.id}`"
+          @click.prevent="scrollToDeployStep(item.id)"
+        >
+          {{ item.label }}
+        </a>
       </nav>
 
       <div class="step-list">
