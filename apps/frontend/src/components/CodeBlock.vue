@@ -21,6 +21,28 @@ const missingInputs = computed(() =>
   (props.required ?? []).filter((item) => !props.values?.[item.key]?.trim())
 );
 
+async function writeClipboard(text: string) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  const copiedWithFallback = document.execCommand('copy');
+  document.body.removeChild(textarea);
+
+  if (!copiedWithFallback) {
+    throw new Error('複製失敗，請手動選取指令');
+  }
+}
+
 async function copyCode() {
   if (missingInputs.value.length > 0) {
     warning.value = `請先填寫：${missingInputs.value.map((item) => item.label).join('、')}`;
@@ -28,12 +50,17 @@ async function copyCode() {
     return;
   }
 
-  await navigator.clipboard.writeText(props.code.trim());
-  warning.value = '';
-  copied.value = true;
-  window.setTimeout(() => {
+  try {
+    await writeClipboard(props.code.trim());
+    warning.value = '';
+    copied.value = true;
+    window.setTimeout(() => {
+      copied.value = false;
+    }, 1400);
+  } catch (error) {
+    warning.value = error instanceof Error ? error.message : '複製失敗，請手動選取指令';
     copied.value = false;
-  }, 1400);
+  }
 }
 </script>
 
