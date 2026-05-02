@@ -28,7 +28,7 @@ const clubs = [
   },
   {
     name: '景美電資 CMIOC',
-    image: '/photo/cmioc.jpeg',
+    image: '/photo/cmioc.jpg',
     text: '社課分成程式班與網美班，包含 C++、HTML、CSS，和四校共同辦活動。'
   }
 ];
@@ -123,4 +123,3 @@ onMounted(loadEvents);
     </section>
   </main>
 </template>
-
