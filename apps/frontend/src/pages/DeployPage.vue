@@ -10,7 +10,7 @@ type DeployFieldKey =
   | 'adminPassword';
 
 const params = reactive<Record<DeployFieldKey, string>>({
-  repositoryUrl: '',
+  repositoryUrl: 'https://github.com/asuralyc/izcc.git',
   serverIp: '',
   dbPassword: '',
   jwtSecret: '',
@@ -35,7 +35,7 @@ const deployFields: Array<{
   {
     key: 'repositoryUrl',
     label: fieldLabels.repositoryUrl,
-    placeholder: 'https://github.com/your-org/izcc.git',
+    placeholder: 'https://github.com/asuralyc/izcc.git',
     description: '正式主機要 clone 的 Git repository。'
   },
   {
@@ -244,7 +244,7 @@ function replaceToken(source: string, token: string, value: string) {
 
 function filled(template: string) {
   let code = template;
-  code = replaceToken(code, '__REPOSITORY_URL__', params.repositoryUrl || 'YOUR_REPOSITORY_URL');
+  code = replaceToken(code, '__REPOSITORY_URL__', params.repositoryUrl || 'https://github.com/asuralyc/izcc.git');
   code = replaceToken(code, '__SERVER_IP__', params.serverIp || 'YOUR_SERVER_IP');
   code = replaceToken(code, '__DB_PASSWORD__', params.dbPassword || 'REPLACE_WITH_STRONG_PASSWORD');
   code = replaceToken(code, '__JWT_SECRET__', params.jwtSecret || 'REPLACE_WITH_LONG_RANDOM_SECRET');
