@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: izcc-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: izcc
+      POSTGRES_USER: izcc
+      POSTGRES_PASSWORD: izcc_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - izcc_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  izcc_postgres_data:

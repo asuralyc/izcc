@@ -1,0 +1,21 @@
+{
+  "name": "izcc-registration-system",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @izcc/backend & npm run dev -w @izcc/frontend",
+    "dev:frontend": "npm run dev -w @izcc/frontend",
+    "dev:backend": "npm run dev -w @izcc/backend",
+    "build": "npm run build -w @izcc/frontend && npm run build -w @izcc/backend",
+    "build:frontend": "npm run build -w @izcc/frontend",
+    "build:backend": "npm run build -w @izcc/backend",
+    "start:backend": "npm run start:prod -w @izcc/backend",
+    "lint": "npm run lint -w @izcc/frontend && npm run lint -w @izcc/backend"
+  }
+}
+

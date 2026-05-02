@@ -1,0 +1,16 @@
+[Unit]
+Description=IZCC NestJS API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/izcc
+EnvironmentFile=/opt/izcc/.env
+ExecStart=/usr/bin/node /opt/izcc/apps/backend/dist/main.js
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
