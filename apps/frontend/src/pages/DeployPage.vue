@@ -3,7 +3,6 @@ import { reactive } from 'vue';
 import CodeBlock from '../components/CodeBlock.vue';
 
 type DeployFieldKey =
-  | 'deployUser'
   | 'repositoryUrl'
   | 'serverIp'
   | 'dbPassword'
@@ -11,7 +10,6 @@ type DeployFieldKey =
   | 'adminPassword';
 
 const params = reactive<Record<DeployFieldKey, string>>({
-  deployUser: '',
   repositoryUrl: '',
   serverIp: '',
   dbPassword: '',
@@ -20,12 +18,11 @@ const params = reactive<Record<DeployFieldKey, string>>({
 });
 
 const fieldLabels: Record<DeployFieldKey, string> = {
-  deployUser: 'Linux 部署使用者',
   repositoryUrl: 'Git Repository URL',
   serverIp: '主機 IP',
   dbPassword: 'PostgreSQL 密碼',
   jwtSecret: 'JWT Secret',
-  adminPassword: 'Admin 密碼'
+  adminPassword: '網站管理員密碼'
 };
 
 const deployFields: Array<{
@@ -35,12 +32,6 @@ const deployFields: Array<{
   description: string;
   secret?: boolean;
 }> = [
-  {
-    key: 'deployUser',
-    label: fieldLabels.deployUser,
-    placeholder: 'ubuntu',
-    description: 'Linux 上負責部署的使用者，會用來設定 /opt/izcc 與 /var/www/izcc 的檔案權限。'
-  },
   {
     key: 'repositoryUrl',
     label: fieldLabels.repositoryUrl,
@@ -57,7 +48,7 @@ const deployFields: Array<{
     key: 'dbPassword',
     label: fieldLabels.dbPassword,
     placeholder: '貼上產生的密碼',
-    description: 'PostgreSQL role izcc 的密碼，會寫入資料庫與後端 .env。',
+    description: 'PostgreSQL role izcc 的密碼，會寫入資料庫與後端 .env；不需要太長。',
     secret: true
   },
   {
@@ -70,8 +61,8 @@ const deployFields: Array<{
   {
     key: 'adminPassword',
     label: fieldLabels.adminPassword,
-    placeholder: '貼上 Admin 初始密碼',
-    description: '後端第一次啟動時會用這個密碼建立 admin 帳號。',
+    placeholder: '貼上網站管理員密碼',
+    description: '這是網站管理員 admin 的登入密碼；管理員登入後可以新增、修改、發佈、下架、封存活動並查看報名名單。',
     secret: true
   }
 ];
@@ -98,18 +89,18 @@ sudo systemctl status postgresql
 `;
 
 const passwordGenerator = `
-openssl rand -base64 32
+# PostgreSQL 密碼或網站管理員密碼
+openssl rand -base64 12
+
+# JWT Secret
 openssl rand -hex 32
 `;
 
 const prepareProject = `
 sudo mkdir -p /opt/izcc /var/www/izcc /var/www/uploads
-sudo chown -R __DEPLOY_USER__:__DEPLOY_USER__ /opt/izcc /var/www/izcc
+sudo git clone __REPOSITORY_URL__ /opt/izcc
 sudo chown -R www-data:www-data /var/www/uploads
 sudo chmod 775 /var/www/uploads
-
-cd /opt/izcc
-git clone __REPOSITORY_URL__ .
 `;
 
 const databaseSetup = `
@@ -149,10 +140,9 @@ sudo chmod 640 /opt/izcc/.env
 
 const buildApp = `
 cd /opt/izcc
-npm install
-npm run build
+sudo npm install
+sudo npm run build
 sudo rsync -a --delete apps/frontend/dist/ /var/www/izcc/
-sudo chown -R www-data:www-data /var/www/izcc
 `;
 
 const systemdService = `
@@ -221,11 +211,10 @@ curl http://__SERVER_IP__/api/events
 
 const updateCommands = `
 cd /opt/izcc
-git pull
-npm install
-npm run build
+sudo git pull
+sudo npm install
+sudo npm run build
 sudo rsync -a --delete apps/frontend/dist/ /var/www/izcc/
-sudo chown -R www-data:www-data /var/www/izcc
 sudo systemctl restart izcc-api
 sudo systemctl reload nginx
 `;
@@ -240,7 +229,6 @@ function replaceToken(source: string, token: string, value: string) {
 
 function filled(template: string) {
   let code = template;
-  code = replaceToken(code, '__DEPLOY_USER__', params.deployUser || '$USER');
   code = replaceToken(code, '__REPOSITORY_URL__', params.repositoryUrl || 'YOUR_REPOSITORY_URL');
   code = replaceToken(code, '__SERVER_IP__', params.serverIp || 'YOUR_SERVER_IP');
   code = replaceToken(code, '__DB_PASSWORD__', params.dbPassword || 'REPLACE_WITH_STRONG_PASSWORD');
@@ -302,7 +290,7 @@ function filled(template: string) {
 
         <article class="panel deploy-step">
           <h2>產生密碼參考指令</h2>
-          <p class="muted">可分別產生 PostgreSQL 密碼、JWT secret、Admin 密碼。</p>
+          <p class="muted">PostgreSQL 密碼與網站管理員密碼可用較短的隨機值；JWT secret 請使用較長的隨機值。</p>
           <CodeBlock :code="passwordGenerator" language="bash" />
         </article>
 
@@ -330,7 +318,7 @@ function filled(template: string) {
           <CodeBlock
             :code="filled(prepareProject)"
             language="bash"
-            :required="required(['deployUser', 'repositoryUrl'])"
+            :required="required(['repositoryUrl'])"
             :values="params"
           />
         </article>
