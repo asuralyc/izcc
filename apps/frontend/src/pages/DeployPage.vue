@@ -98,6 +98,11 @@ npm -v
 `;
 
 const postgresInstall = `
+# Ubuntu 預設 apt 來源沒有 PostgreSQL 18，先加入 PostgreSQL 官方 Repository
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+
+sudo apt update
 sudo apt install -y postgresql-18
 sudo systemctl enable --now postgresql
 sudo systemctl status postgresql
@@ -332,6 +337,7 @@ function scrollToDeployStep(id: string) {
 
         <article id="postgres-install" class="panel deploy-step">
           <h2>3. 安裝 PostgreSQL 18</h2>
+          <p class="muted">Ubuntu 預設的 apt 來源沒有 PostgreSQL 18，需要先加入 PostgreSQL 官方 repository。</p>
           <CodeBlock :code="postgresInstall" language="bash" />
         </article>
 
