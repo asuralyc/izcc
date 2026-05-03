@@ -25,7 +25,7 @@ npm run dev
 
 ## 環境變數
 
-請參考 [.env.example](/Users/sapp/Documents/GitProject/Sapp/IZCC/.env.example)。正式部署至少要修改：
+請參考 [.env.example](.env.example)。正式部署至少要修改：
 
 - `JWT_SECRET`
 - `DB_PASSWORD`
@@ -40,4 +40,8 @@ npm run dev
 - 後端專案與 NestJS build：`/opt/izcc`
 - 上傳圖片：`/var/www/uploads`
 
-部署範本在 [infra/nginx/izcc.conf](/Users/sapp/Documents/GitProject/Sapp/IZCC/infra/nginx/izcc.conf) 與 [infra/systemd/izcc-api.service](/Users/sapp/Documents/GitProject/Sapp/IZCC/infra/systemd/izcc-api.service)。
+部署範本在 [infra/nginx/izcc.conf](infra/nginx/izcc.conf) 與 [infra/systemd/izcc-api.service](infra/systemd/izcc-api.service)。
+
+## GitHub Pages 部署說明頁
+
+公開版部署說明頁放在 [docs/index.html](docs/index.html)。推上 GitHub 後，到 repository 的 Settings → Pages，將 source 設為 `main` branch 的 `/docs` 資料夾，完成後可用 `https://asuralyc.github.io/izcc/` 分享。

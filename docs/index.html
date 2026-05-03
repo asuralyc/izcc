@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IZCC 部署我自己</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17202a;
+        --muted: #5c6773;
+        --paper: #f7f7f3;
+        --line: #d8dedb;
+        --line-strong: #aeb8b5;
+        --blue: #2f6fbc;
+        --red: #c44747;
+        --green: #218466;
+        --pink: #bb5a82;
+        --navy: #1f3442;
+        --danger: #b13d3d;
+        --shadow: 0 16px 36px rgba(21, 31, 38, 0.08);
+        font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background:
+          linear-gradient(90deg, rgba(47, 111, 188, 0.06), transparent 28%),
+          linear-gradient(180deg, #f7f7f3 0%, #eef2ef 100%);
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 16px 0;
+        background: rgba(247, 247, 243, 0.86);
+        backdrop-filter: blur(14px);
+      }
+
+      .brand-mark {
+        display: inline-flex;
+        gap: 10px;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .brand-symbol {
+        display: inline-grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        color: #ffffff;
+        background:
+          linear-gradient(135deg, var(--blue) 0 25%, var(--red) 25% 50%, var(--green) 50% 75%, var(--pink) 75%);
+        font-weight: 800;
+      }
+
+      .brand-mark strong,
+      .brand-mark small {
+        display: block;
+      }
+
+      .brand-mark small {
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .page {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 72px;
+      }
+
+      .section-head {
+        display: flex;
+        gap: 16px;
+        align-items: end;
+        justify-content: space-between;
+        margin: 22px 0 14px;
+      }
+
+      .section-head h1,
+      .deploy-step h2 {
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .eyebrow,
+      .muted {
+        color: var(--muted);
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
+      }
+
+      .panel {
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: var(--shadow);
+      }
+
+      .deploy-layout {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+      }
+
+      .deploy-nav {
+        position: sticky;
+        top: 84px;
+      }
+
+      .deploy-nav a {
+        display: block;
+        padding: 8px 0;
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .deploy-nav a:hover {
+        color: var(--navy);
+      }
+
+      .step-list {
+        display: grid;
+        gap: 22px;
+      }
+
+      .deploy-inputs {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .field span {
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .field input {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #ffffff;
+      }
+
+      .field small {
+        color: var(--muted);
+      }
+
+      .code-block {
+        position: relative;
+        margin: 12px 0;
+        overflow: hidden;
+        border-radius: 8px;
+        background: #121b24;
+        box-shadow: 0 18px 34px rgba(18, 27, 36, 0.18);
+      }
+
+      .code-block pre {
+        margin: 0;
+        padding: 18px;
+        overflow-x: auto;
+        color: #e8f0f2;
+        font-size: 0.92rem;
+        line-height: 1.55;
+      }
+
+      .code-block code {
+        font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+      }
+
+      .copy-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        min-height: 34px;
+        padding: 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 7px;
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .copy-warning {
+        margin: 0;
+        padding: 0 18px 16px;
+        color: #ffd28a;
+        font-size: 0.9rem;
+      }
+
+      code {
+        font-family: "SFMono-Regular", "Cascadia Code", "Liberation Mono", monospace;
+      }
+
+      @media (max-width: 920px) {
+        .site-header,
+        .deploy-layout,
+        .deploy-inputs {
+          grid-template-columns: 1fr;
+        }
+
+        .site-header {
+          position: static;
+        }
+
+        .deploy-nav {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand-mark" href="#top" aria-label="IZCC 部署頁">
+        <span class="brand-symbol">IZ</span>
+        <span>
+          <strong>IZCC</strong>
+          <small>靜態部署說明</small>
+        </span>
+      </a>
+    </header>
+
+    <main id="top" class="page">
+      <section class="section-head">
+        <div>
+          <p class="eyebrow">Self Deploy</p>
+          <h1>部署我自己</h1>
+        </div>
+      </section>
+
+      <section class="deploy-layout">
+        <nav id="deploy-nav" class="panel deploy-nav" aria-label="部署步驟"></nav>
+        <div id="step-list" class="step-list"></div>
+      </section>
+    </main>
+
+    <script>
+      const params = {
+        repositoryUrl: 'https://github.com/asuralyc/izcc.git',
+        serverIp: '',
+        dbPassword: '',
+        jwtSecret: '',
+        adminPassword: ''
+      };
+
+      const fieldLabels = {
+        repositoryUrl: 'Git Repository URL',
+        serverIp: '主機 IP',
+        dbPassword: 'PostgreSQL 密碼',
+        jwtSecret: 'JWT Secret',
+        adminPassword: '網站管理員密碼'
+      };
+
+      const deployFields = [
+        {
+          key: 'repositoryUrl',
+          label: fieldLabels.repositoryUrl,
+          placeholder: 'https://github.com/asuralyc/izcc.git',
+          description: '正式主機要 clone 的 Git repository。'
+        },
+        {
+          key: 'serverIp',
+          label: fieldLabels.serverIp,
+          placeholder: '203.0.113.10',
+          description: '這台主機沒有網域時，前端 origin 與 Nginx server_name 都使用這個 IP。'
+        },
+        {
+          key: 'dbPassword',
+          label: fieldLabels.dbPassword,
+          placeholder: '貼上產生的密碼',
+          description: 'PostgreSQL role izcc 的密碼，會寫入資料庫與後端 .env；不需要太長。',
+          secret: true
+        },
+        {
+          key: 'jwtSecret',
+          label: fieldLabels.jwtSecret,
+          placeholder: '貼上 32 bytes 以上的 random secret',
+          description: '用來簽發 JWT，請使用長且隨機的字串。',
+          secret: true
+        },
+        {
+          key: 'adminPassword',
+          label: fieldLabels.adminPassword,
+          placeholder: '貼上網站管理員密碼',
+          description: '這是網站管理員 admin 的登入密碼；管理員登入後可以新增、修改、發佈、下架、封存活動並查看報名名單。',
+          secret: true
+        }
+      ];
+
+      const snippets = {
+        nginxInstall: `
+sudo apt update
+sudo apt install -y nginx
+sudo systemctl enable --now nginx
+sudo systemctl status nginx
+`,
+        nodeInstall: `
+sudo apt install -y curl ca-certificates git rsync
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt install -y nodejs
+node -v
+npm -v
+`,
+        postgresInstall: `
+# Ubuntu 預設 apt 來源沒有 PostgreSQL 18，先加入 PostgreSQL 官方 Repository
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+
+sudo apt update
+sudo apt install -y postgresql-18
+sudo systemctl enable --now postgresql
+sudo systemctl status postgresql
+`,
+        passwordGenerator: `
+# PostgreSQL 密碼或網站管理員密碼
+openssl rand -base64 12
+
+# JWT Secret
+openssl rand -hex 32
+`,
+        prepareProject: `
+sudo mkdir -p /opt/izcc /var/www/izcc /var/www/uploads
+sudo git clone __REPOSITORY_URL__ /opt/izcc
+sudo chown -R www-data:www-data /var/www/uploads
+sudo chmod 775 /var/www/uploads
+`,
+        databaseSetup: `
+sudo -u postgres psql <<'SQL'
+CREATE USER izcc WITH PASSWORD '__DB_PASSWORD__';
+CREATE DATABASE izcc OWNER izcc;
+GRANT ALL PRIVILEGES ON DATABASE izcc TO izcc;
+SQL
+`,
+        envFile: `
+cd /opt/izcc
+sudo tee .env > /dev/null <<'EOF'
+NODE_ENV=production
+PORT=3000
+FRONTEND_ORIGIN=http://__SERVER_IP__
+JWT_SECRET=__JWT_SECRET__
+JWT_EXPIRES_IN=7d
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=izcc
+DB_PASSWORD=__DB_PASSWORD__
+DB_NAME=izcc
+DB_SYNC=true
+
+ADMIN_ACCOUNT=admin
+ADMIN_PASSWORD=__ADMIN_PASSWORD__
+
+UPLOAD_DIR=/var/www/uploads
+PUBLIC_UPLOAD_BASE_URL=/uploads
+EOF
+
+sudo chown www-data:www-data /opt/izcc/.env
+sudo chmod 640 /opt/izcc/.env
+`,
+        buildApp: `
+cd /opt/izcc
+sudo npm install
+sudo npm run build
+sudo rsync -a --delete apps/frontend/dist/ /var/www/izcc/
+`,
+        systemdService: `
+sudo tee /etc/systemd/system/izcc-api.service > /dev/null <<'EOF'
+[Unit]
+Description=IZCC NestJS API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/izcc
+EnvironmentFile=/opt/izcc/.env
+ExecStart=/usr/bin/node /opt/izcc/apps/backend/dist/main.js
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now izcc-api
+sudo systemctl status izcc-api
+`,
+        nginxConfig: `
+sudo tee /etc/nginx/sites-available/izcc > /dev/null <<'EOF'
+server {
+    listen 80;
+    server_name __SERVER_IP__;
+
+    root /var/www/izcc;
+    index index.html;
+
+    location /uploads/ {
+        alias /var/www/uploads/;
+        try_files $uri =404;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+sudo ln -sfn /etc/nginx/sites-available/izcc /etc/nginx/sites-enabled/izcc
+sudo nginx -t
+sudo systemctl reload nginx
+`,
+        verifyCommands: `
+curl -I http://__SERVER_IP__
+curl http://__SERVER_IP__/api/events
+`,
+        updateCommands: `
+cd /opt/izcc
+sudo git pull
+sudo npm install
+sudo npm run build
+sudo rsync -a --delete apps/frontend/dist/ /var/www/izcc/
+sudo systemctl restart izcc-api
+sudo systemctl reload nginx
+`
+      };
+
+      const navItems = [
+        { id: 'inputs', label: '參數' },
+        { id: 'nginx-install', label: '1. Nginx' },
+        { id: 'node-install', label: '2. NodeJS' },
+        { id: 'postgres-install', label: '3. PostgreSQL' },
+        { id: 'project', label: '4. 專案目錄' },
+        { id: 'database', label: '5. 資料庫' },
+        { id: 'env', label: '6. 環境變數' },
+        { id: 'build', label: '7. 建置' },
+        { id: 'systemd', label: '8. API 服務' },
+        { id: 'nginx', label: '9. Nginx 設定' },
+        { id: 'verify', label: '10. 驗證' },
+        { id: 'update', label: '更新' }
+      ];
+
+      const steps = [
+        {
+          title: '部署前提',
+          body: '這台主機只有 IP、沒有網域也沒有 SSL 憑證，所以網站走 HTTP。Nginx 設定不要加入 <code>Strict-Transport-Security</code>，也不要做 HTTP 轉 HTTPS。'
+        },
+        { id: 'inputs', title: '需要填寫的參數', inputs: true },
+        {
+          title: '產生密碼參考指令',
+          body: 'PostgreSQL 密碼與網站管理員密碼可用較短的隨機值；JWT secret 請使用較長的隨機值。',
+          codeKey: 'passwordGenerator'
+        },
+        { id: 'nginx-install', title: '1. 安裝 Nginx', codeKey: 'nginxInstall' },
+        { id: 'node-install', title: '2. 安裝 NodeJS 24', codeKey: 'nodeInstall' },
+        {
+          id: 'postgres-install',
+          title: '3. 安裝 PostgreSQL 18',
+          body: 'Ubuntu 預設的 apt 來源沒有 PostgreSQL 18，需要先加入 PostgreSQL 官方 repository。',
+          codeKey: 'postgresInstall'
+        },
+        {
+          id: 'project',
+          title: '4. 建立前後端目錄',
+          body: '後端原始碼與 Nest build 放在 <code>/opt/izcc</code>，前端靜態檔放在 <code>/var/www/izcc</code>，圖片上傳固定放在 <code>/var/www/uploads</code>。',
+          codeKey: 'prepareProject',
+          required: ['repositoryUrl']
+        },
+        { id: 'database', title: '5. 建立 PostgreSQL 資料庫', codeKey: 'databaseSetup', required: ['dbPassword'] },
+        {
+          id: 'env',
+          title: '6. 建立後端環境變數',
+          codeKey: 'envFile',
+          required: ['serverIp', 'dbPassword', 'jwtSecret', 'adminPassword']
+        },
+        { id: 'build', title: '7. 建置並發佈前端', codeKey: 'buildApp' },
+        { id: 'systemd', title: '8. 建立 NestJS API 服務', codeKey: 'systemdService' },
+        {
+          id: 'nginx',
+          title: '9. 設定 Nginx',
+          body: '此設定只開 HTTP 80，沒有 HSTS，也沒有強制 HTTPS。',
+          codeKey: 'nginxConfig',
+          required: ['serverIp']
+        },
+        { id: 'verify', title: '10. 驗證', codeKey: 'verifyCommands', required: ['serverIp'] },
+        { id: 'update', title: '之後更新站台', codeKey: 'updateCommands' }
+      ];
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function replaceToken(source, token, value) {
+        return source.split(token).join(value);
+      }
+
+      function fillSnippet(template) {
+        let code = template;
+        code = replaceToken(code, '__REPOSITORY_URL__', params.repositoryUrl || 'https://github.com/asuralyc/izcc.git');
+        code = replaceToken(code, '__SERVER_IP__', params.serverIp || 'YOUR_SERVER_IP');
+        code = replaceToken(code, '__DB_PASSWORD__', params.dbPassword || 'REPLACE_WITH_STRONG_PASSWORD');
+        code = replaceToken(code, '__JWT_SECRET__', params.jwtSecret || 'REPLACE_WITH_LONG_RANDOM_SECRET');
+        code = replaceToken(code, '__ADMIN_PASSWORD__', params.adminPassword || 'REPLACE_WITH_ADMIN_PASSWORD');
+        return code.trim();
+      }
+
+      function requiredLabels(required) {
+        return required.map((key) => fieldLabels[key]).join('、');
+      }
+
+      function missingRequired(required) {
+        return required.filter((key) => !params[key] || !params[key].trim());
+      }
+
+      async function writeClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copiedWithFallback = document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        if (!copiedWithFallback) {
+          throw new Error('複製失敗，請手動選取指令');
+        }
+      }
+
+      function renderCodeBlock(step) {
+        const code = fillSnippet(snippets[step.codeKey]);
+        const required = step.required || [];
+        const missing = missingRequired(required);
+        const warning = missing.length ? `請先填寫：${requiredLabels(missing)}` : '';
+
+        return `
+          <div class="code-block" data-code-key="${step.codeKey}" data-required="${required.join(',')}">
+            <button class="copy-button" type="button">複製</button>
+            <pre><code>${escapeHtml(code)}</code></pre>
+            ${warning ? `<p class="copy-warning">${warning}</p>` : ''}
+          </div>
+        `;
+      }
+
+      function renderInputs() {
+        return `
+          <p class="muted">下方欄位會自動帶入後面的指令。指令需要的欄位沒填好時，複製按鈕會提醒你補上。</p>
+          <div class="deploy-inputs">
+            ${deployFields.map((field) => `
+              <label class="field">
+                <span>${field.label}</span>
+                <input
+                  data-param="${field.key}"
+                  type="${field.secret ? 'password' : 'text'}"
+                  placeholder="${field.placeholder}"
+                  value="${escapeHtml(params[field.key])}"
+                />
+                <small>${field.description}</small>
+              </label>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      function renderNav() {
+        document.getElementById('deploy-nav').innerHTML = navItems
+          .map((item) => `<a href="#${item.id}" data-target="${item.id}">${item.label}</a>`)
+          .join('');
+      }
+
+      function renderSteps() {
+        document.getElementById('step-list').innerHTML = steps
+          .map((step) => `
+            <article${step.id ? ` id="${step.id}"` : ''} class="panel deploy-step">
+              <h2>${step.title}</h2>
+              ${step.inputs ? renderInputs() : ''}
+              ${step.body ? `<p class="muted">${step.body}</p>` : ''}
+              ${step.codeKey ? renderCodeBlock(step) : ''}
+            </article>
+          `)
+          .join('');
+      }
+
+      function updateCodeBlocks() {
+        document.querySelectorAll('.code-block').forEach((block) => {
+          const codeKey = block.dataset.codeKey;
+          const required = block.dataset.required ? block.dataset.required.split(',').filter(Boolean) : [];
+          const missing = missingRequired(required);
+          const codeElement = block.querySelector('code');
+          const warningElement = block.querySelector('.copy-warning');
+
+          if (codeElement && snippets[codeKey]) {
+            codeElement.textContent = fillSnippet(snippets[codeKey]);
+          }
+
+          if (missing.length) {
+            const warningText = `請先填寫：${requiredLabels(missing)}`;
+            if (warningElement) {
+              warningElement.textContent = warningText;
+            } else {
+              block.insertAdjacentHTML('beforeend', `<p class="copy-warning">${warningText}</p>`);
+            }
+          } else if (warningElement) {
+            warningElement.remove();
+          }
+        });
+      }
+
+      function bindEvents() {
+        document.querySelectorAll('[data-param]').forEach((input) => {
+          input.addEventListener('input', (event) => {
+            params[event.target.dataset.param] = event.target.value;
+            updateCodeBlocks();
+          });
+        });
+
+        document.querySelectorAll('.copy-button').forEach((button) => {
+          button.addEventListener('click', async () => {
+            const block = button.closest('.code-block');
+            const codeKey = block.dataset.codeKey;
+            const required = block.dataset.required ? block.dataset.required.split(',').filter(Boolean) : [];
+            const missing = missingRequired(required);
+
+            if (missing.length) {
+              const oldWarning = block.querySelector('.copy-warning');
+              if (oldWarning) oldWarning.remove();
+              block.insertAdjacentHTML('beforeend', `<p class="copy-warning">請先填寫：${requiredLabels(missing)}</p>`);
+              return;
+            }
+
+            try {
+              await writeClipboard(fillSnippet(snippets[codeKey]));
+              button.textContent = '已複製';
+              setTimeout(() => {
+                button.textContent = '複製';
+              }, 1400);
+            } catch (error) {
+              const oldWarning = block.querySelector('.copy-warning');
+              if (oldWarning) oldWarning.remove();
+              const message = error instanceof Error ? error.message : '複製失敗，請手動選取指令';
+              block.insertAdjacentHTML('beforeend', `<p class="copy-warning">${message}</p>`);
+            }
+          });
+        });
+
+        document.querySelectorAll('[data-target]').forEach((link) => {
+          link.addEventListener('click', (event) => {
+            event.preventDefault();
+            scrollToDeployStep(link.dataset.target);
+          });
+        });
+      }
+
+      function scrollToDeployStep(id) {
+        const target = document.getElementById(id);
+        if (!target) return;
+
+        const header = document.querySelector('.site-header');
+        const headerOffset = header ? header.offsetHeight : 0;
+        const top = target.getBoundingClientRect().top + window.scrollY - headerOffset - 18;
+
+        window.history.replaceState(null, '', `#${id}`);
+        window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+      }
+
+      renderNav();
+      renderSteps();
+      bindEvents();
+    </script>
+  </body>
+</html>
